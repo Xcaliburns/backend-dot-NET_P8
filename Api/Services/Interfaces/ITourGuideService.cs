@@ -1,4 +1,5 @@
 ﻿using GpsUtil.Location;
+
 using TourGuide.Users;
 using TourGuide.Utilities;
 using TripPricer;

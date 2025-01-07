@@ -11,10 +11,12 @@ namespace TourGuide.Controllers;
 public class TourGuideController : ControllerBase
 {
     private readonly ITourGuideService _tourGuideService;
+    private readonly IRewardsService _rewardsService;
 
-    public TourGuideController(ITourGuideService tourGuideService)
+    public TourGuideController(ITourGuideService tourGuideService, IRewardsService rewardsService)
     {
         _tourGuideService = tourGuideService;
+        _rewardsService = rewardsService;
     }
 
     [HttpGet("getLocation")]
@@ -34,10 +36,21 @@ public class TourGuideController : ControllerBase
     // The reward points for visiting each Attraction.
     //    Note: Attraction reward points can be gathered from RewardsCentral
     [HttpGet("getNearbyAttractions")]
-    public ActionResult<List<Attraction>> GetNearbyAttractions([FromQuery] string userName)
+    public ActionResult<List<object>> GetNearbyAttractions([FromQuery] string userName)
     {
-        var visitedLocation = _tourGuideService.GetUserLocation(GetUser(userName));
-        var attractions = _tourGuideService.GetNearByAttractions(visitedLocation);
+        var user = GetUser(userName);
+        var visitedLocation = _tourGuideService.GetUserLocation(user);
+        var attractions = _tourGuideService.GetNearByAttractions(visitedLocation)
+            .Select(attraction => new
+            {
+                attraction.AttractionName,
+                attraction.Latitude,
+                attraction.Longitude,
+                UserLatitude = visitedLocation.Location.Latitude,
+                UserLongitude = visitedLocation.Location.Longitude,
+                Distance = _rewardsService.GetDistance(attraction, visitedLocation.Location),
+                RewardPoints = _rewardsService.GetRewardPoints(attraction, user)
+            }).ToList();
         return Ok(attractions);
     }
 

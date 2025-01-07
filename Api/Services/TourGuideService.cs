@@ -92,9 +92,7 @@ public class TourGuideService : ITourGuideService
 
     public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
     {
-        // appel de la nouvelle methode GetClosestAttractions pour recuperer les 5 attractions les plus proches de la position acuelle
         List<Attraction> nearbyAttractions = _rewardsService.GetClosestAttractions(visitedLocation.Location);
-
         return nearbyAttractions;
     }
 
