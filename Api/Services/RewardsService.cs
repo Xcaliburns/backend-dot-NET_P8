@@ -32,16 +32,18 @@ public class RewardsService : IRewardsService
         _proximityBuffer = _defaultProximityBuffer;
     }
 
-    public void CalculateRewards(User user)
+    public void CalculateRewards(User user)  // modification de la methode boucle for au lieu de foreach
     {
         count++;
         List<VisitedLocation> userLocations = user.VisitedLocations;
         List<Attraction> attractions = _gpsUtil.GetAttractions();
 
-        foreach (var visitedLocation in userLocations)
+        for (int i = 0; i < userLocations.Count; i++)
         {
-            foreach (var attraction in attractions)
+            var visitedLocation = userLocations[i];
+            for (int j = 0; j < attractions.Count; j++)
             {
+                var attraction = attractions[j];
                 if (!user.UserRewards.Any(r => r.Attraction.AttractionName == attraction.AttractionName))
                 {
                     if (NearAttraction(visitedLocation, attraction))
@@ -53,10 +55,31 @@ public class RewardsService : IRewardsService
         }
     }
 
+
+
+
     public bool IsWithinAttractionProximity(Attraction attraction, Locations location)
     {
         Console.WriteLine(GetDistance(attraction, location));
         return GetDistance(attraction, location) <= _attractionProximityRange;
+    }
+
+    // ajout de la methode  GetClosestAttractions pour les tests
+    public List<Attraction> GetClosestAttractions(Locations location)
+    {
+        var attractions = _gpsUtil.GetAttractions();
+        var closestAttractions = attractions
+            .Select(attraction => new
+            {
+                Attraction = attraction,
+                Distance = GetDistance(attraction, location)
+            })
+            .OrderBy(attractionWithDistance => attractionWithDistance.Distance)
+            .Take(5)
+            .Select(attractionWithDistance => attractionWithDistance.Attraction)
+            .ToList();
+
+        return closestAttractions;
     }
 
     private bool NearAttraction(VisitedLocation visitedLocation, Attraction attraction)
@@ -64,7 +87,7 @@ public class RewardsService : IRewardsService
         return GetDistance(attraction, visitedLocation.Location) <= _proximityBuffer;
     }
 
-    private int GetRewardPoints(Attraction attraction, User user)
+    public int GetRewardPoints(Attraction attraction, User user)
     {
         return _rewardsCentral.GetAttractionRewardPoints(attraction.AttractionId, user.UserId);
     }

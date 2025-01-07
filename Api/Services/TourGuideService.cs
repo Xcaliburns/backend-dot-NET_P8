@@ -75,7 +75,7 @@ public class TourGuideService : ITourGuideService
     public List<Provider> GetTripDeals(User user)
     {
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
-        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId,
+        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId, //modifications dans tripPricer pour la réussite du test
             user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
             user.UserPreferences.TripDuration, cumulativeRewardPoints);
         user.TripDeals = providers;
@@ -92,15 +92,7 @@ public class TourGuideService : ITourGuideService
 
     public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
     {
-        List<Attraction> nearbyAttractions = new ();
-        foreach (var attraction in _gpsUtil.GetAttractions())
-        {
-            if (_rewardsService.IsWithinAttractionProximity(attraction, visitedLocation.Location))
-            {
-                nearbyAttractions.Add(attraction);
-            }
-        }
-
+        List<Attraction> nearbyAttractions = _rewardsService.GetClosestAttractions(visitedLocation.Location);
         return nearbyAttractions;
     }
 
