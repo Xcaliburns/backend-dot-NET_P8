@@ -35,7 +35,9 @@ public class GpsUtil
         }
     }
 
-    public List<Attraction> GetAttractions()
+
+    //passage de la methode en asynchrone
+    public async Task <List<Attraction>> GetAttractionsAsync()
     {
         rateLimiter.Wait();
 

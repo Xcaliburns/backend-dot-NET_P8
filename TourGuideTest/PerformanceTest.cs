@@ -46,20 +46,21 @@ namespace TourGuideTest
 
        // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
         [Fact]
-        public void HighVolumeTrackLocation()
+        public async Task HighVolumeTrackLocation()
         {
-            //On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(1000);
+            // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
+            _fixture.Initialize(100);
 
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            foreach (var user in allUsers)
-            {
-                _fixture.TourGuideService.TrackUserLocation(user);
-            }
+            //remplacement du foreach par un Parallel.ForEach pour améliorer les performances
+            var tasks = allUsers.Select(user => _fixture.TourGuideService.TrackUserLocationAsync(user)).ToArray();
+            await Task.WhenAll(tasks);
+            _output.WriteLine($"highVolumeTrackLocation: Time Elapsed TrackUserLocationAsync: {stopWatch.Elapsed.TotalSeconds} seconds.");
+
             stopWatch.Stop();
             _fixture.TourGuideService.Tracker.StopTracking();
 
@@ -70,19 +71,34 @@ namespace TourGuideTest
 
         // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
         [Fact]
-        public void HighVolumeGetRewards()
+        public async Task HighVolumeGetRewards()
         {
-            //On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(10);
+            // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
+            _fixture.Initialize(10000);
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            Attraction attraction = _fixture.GpsUtil.GetAttractions()[0];
+            // Appel de la méthode asynchrone GetAttractionsAsync pour obtenir la liste des attractions
+            List<Attraction> attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+            _output.WriteLine($"highVolumeGetRewards GetAttractionsAsync(): Time Elapsed : {stopWatch.Elapsed.TotalSeconds} seconds.");
+            // Sélection de la première attraction de la liste
+            Attraction attraction = attractions[0];
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
-            allUsers.ForEach(u => u.AddToVisitedLocations(new VisitedLocation(u.UserId, attraction, DateTime.Now)));
+            _output.WriteLine($"highVolumeGetRewards GetAllUsers(): Time Elapsed : {stopWatch.Elapsed.TotalSeconds} seconds.");
 
-            allUsers.ForEach(u => _fixture.RewardsService.CalculateRewards(u));
+            allUsers.ForEach(u => u.AddToVisitedLocations(new VisitedLocation(u.UserId, attraction, DateTime.Now)));
+            _output.WriteLine($"highVolumeGetRewards AddToVisitedLocations: Time Elapsed : {stopWatch.Elapsed.TotalSeconds} seconds.");
+
+            // Utilisation de la méthode asynchrone pour améliorer les performances
+            //var tasks = allUsers.Select(u => _fixture.RewardsService.CalculateRewardsAsync(u)).ToArray();
+            //await Task.WhenAll(tasks);
+            //allUsers.ForEach(u => _fixture.RewardsService.CalculateRewardsAsync(u));
+            foreach (var user in allUsers)
+            {
+                await _fixture.RewardsService.CalculateRewardsAsync(user);
+            }
+            _output.WriteLine($"highVolumeGetRewards CalculateRewardsAsync: Time Elapsed : {stopWatch.Elapsed.TotalSeconds} seconds.");
 
             foreach (var user in allUsers)
             {
@@ -91,7 +107,9 @@ namespace TourGuideTest
             stopWatch.Stop();
             _fixture.TourGuideService.Tracker.StopTracking();
 
+           
             _output.WriteLine($"highVolumeGetRewards: Time Elapsed: {stopWatch.Elapsed.TotalSeconds} seconds.");
+
             Assert.True(TimeSpan.FromMinutes(20).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
         }
     }

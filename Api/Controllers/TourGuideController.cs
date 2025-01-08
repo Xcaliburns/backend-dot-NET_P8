@@ -22,7 +22,7 @@ public class TourGuideController : ControllerBase
     [HttpGet("getLocation")]
     public ActionResult<VisitedLocation> GetLocation([FromQuery] string userName)
     {
-        var location = _tourGuideService.GetUserLocation(GetUser(userName));
+        var location = _tourGuideService.GetUserLocationAsync(GetUser(userName));
         return Ok(location);
     }
 
@@ -36,11 +36,11 @@ public class TourGuideController : ControllerBase
     // The reward points for visiting each Attraction.
     //    Note: Attraction reward points can be gathered from RewardsCentral
     [HttpGet("getNearbyAttractions")]
-    public ActionResult<List<object>> GetNearbyAttractions([FromQuery] string userName)
+    public async Task<ActionResult<List<object>>> GetNearbyAttractions([FromQuery] string userName)
     {
         var user = GetUser(userName);
-        var visitedLocation = _tourGuideService.GetUserLocation(user);
-        var attractions = _tourGuideService.GetNearByAttractions(visitedLocation)
+        var visitedLocation = await _tourGuideService.GetUserLocationAsync(user);
+        var attractions = (await _tourGuideService.GetNearByAttractionsAsync(visitedLocation))
             .Select(attraction => new
             {
                 attraction.AttractionName,
