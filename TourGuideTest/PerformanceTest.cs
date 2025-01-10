@@ -44,12 +44,12 @@ namespace TourGuideTest
             _output = output;
         }
 
-       // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
+        // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
         [Fact]
         public void HighVolumeTrackLocation()
         {
             // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(100);
+            _fixture.Initialize(100000);
 
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
 
@@ -90,7 +90,7 @@ namespace TourGuideTest
                 user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
             });
 
-            // Calculate rewards for all users in parallel
+            
             var rewardTasks = allUsers.Select(user => _fixture.RewardsService.CalculateRewardsAsync(user)).ToArray();
             await Task.WhenAll(rewardTasks);
 
@@ -107,34 +107,5 @@ namespace TourGuideTest
             Assert.True(TimeSpan.FromMinutes(20).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
         }
 
-        [Fact]
-        public async Task HighVolumeGetRewardsAsynctoto()
-        {
-            _fixture.Initialize(100000); // Réduisez le nombre pour les tests initiaux
-
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
-
-            Attraction attraction = _fixture.GpsUtil.GetAttractions()[0];
-            List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
-
-            // Ajout des emplacements visités sans paralélisation
-            allUsers.ForEach(u => u.AddToVisitedLocations(new VisitedLocation(u.UserId, attraction, DateTime.Now)));
-
-            // Exécute chaque tâche d'ajout de récompenses de façon asynchrone
-            var tasks = allUsers.Select(user => _fixture.RewardsService.CalculateRewardsAsync(user));
-            await Task.WhenAll(tasks);
-
-            foreach (var user in allUsers)
-            {
-                Assert.True(user.UserRewards.Count > 0);
-            }
-
-            stopWatch.Stop();
-            _fixture.TourGuideService.Tracker.StopTracking();
-
-            _output.WriteLine($"highVolumeGetRewards: Time Elapsed: {stopWatch.Elapsed.TotalSeconds} seconds.");
-            Assert.True(TimeSpan.FromMinutes(20).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
-        }
     }
 }
