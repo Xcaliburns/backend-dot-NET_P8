@@ -18,7 +18,7 @@ public class RewardsService : IRewardsService
     public RewardsService(IGpsUtil gpsUtil, IRewardCentral rewardCentral)
     {
         _gpsUtil = gpsUtil;
-        _rewardsCentral =rewardCentral;
+        _rewardsCentral = rewardCentral;
         _proximityBuffer = _defaultProximityBuffer;
     }
 
@@ -32,11 +32,13 @@ public class RewardsService : IRewardsService
         _proximityBuffer = _defaultProximityBuffer;
     }
 
-    public void CalculateRewards(User user)  // modification de la methode boucle for au lieu de foreach
+    public async Task CalculateRewardsAsync(User user)
     {
         count++;
         List<VisitedLocation> userLocations = user.VisitedLocations;
         List<Attraction> attractions = _gpsUtil.GetAttractions();
+
+        var tasks = new List<Task>();
 
         for (int i = 0; i < userLocations.Count; i++)
         {
@@ -48,15 +50,20 @@ public class RewardsService : IRewardsService
                 {
                     if (NearAttraction(visitedLocation, attraction))
                     {
-                        user.AddUserReward(new UserReward(visitedLocation, attraction, GetRewardPoints(attraction, user)));
+                        tasks.Add(Task.Run(() =>
+                        {
+                            lock (user)
+                            {
+                                user.AddUserReward(new UserReward(visitedLocation, attraction, GetRewardPoints(attraction, user)));
+                            }
+                        }));
                     }
                 }
             }
         }
+
+        await Task.WhenAll(tasks);
     }
-
-
-
 
     public bool IsWithinAttractionProximity(Attraction attraction, Locations location)
     {

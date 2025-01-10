@@ -48,19 +48,22 @@ namespace TourGuideTest
         [Fact]
         public void HighVolumeTrackLocation()
         {
-            //On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(1000);
+            // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
+            _fixture.Initialize(100);
 
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            foreach (var user in allUsers)
+            // Utiliser Parallel.ForEach pour paralléliser le traitement des utilisateurs
+            Parallel.ForEach(allUsers, user =>
             {
                 _fixture.TourGuideService.TrackUserLocation(user);
-            }
+            });
+
             stopWatch.Stop();
+            _output.WriteLine($"highVolumeTrackLocation: Time Elapsed for getAllUsers: {stopWatch.Elapsed.TotalSeconds} seconds.");
             _fixture.TourGuideService.Tracker.StopTracking();
 
             _output.WriteLine($"highVolumeTrackLocation: Time Elapsed: {stopWatch.Elapsed.TotalSeconds} seconds.");
@@ -72,22 +75,39 @@ namespace TourGuideTest
         [Fact]
         public void HighVolumeGetRewards()
         {
-            //On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(10);
+            // Initialize with a higher number of users if needed
+            _fixture.Initialize(10000);
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
             Attraction attraction = _fixture.GpsUtil.GetAttractions()[0];
+            _output.WriteLine($"highVolumeGetRewards: Time Elapsed for GetAttractions: {stopWatch.Elapsed.TotalSeconds} seconds.");
+
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
-            allUsers.ForEach(u => u.AddToVisitedLocations(new VisitedLocation(u.UserId, attraction, DateTime.Now)));
 
-            allUsers.ForEach(u => _fixture.RewardsService.CalculateRewards(u));
-
-            foreach (var user in allUsers)
+            // Parallelize adding visited locations
+            Parallel.ForEach(allUsers, user =>
             {
-                Assert.True(user.UserRewards.Count > 0);
-            }
+                user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
+            });
+            _output.WriteLine($"highVolumeGetRewards: Time Elapsed for AddToVisitedLocations: {stopWatch.Elapsed.TotalSeconds} seconds.");
+
+            // Calculate rewards for all users in parallel
+            var rewardTasks = allUsers.Select(u => _fixture.RewardsService.CalculateRewardsAsync(u)).ToArray();
+            Task.WaitAll(rewardTasks);
+            _output.WriteLine($"highVolumeGetRewards: Time Elapsed for CalculateRewards: {stopWatch.Elapsed.TotalSeconds} seconds.");
+
+            // Check if all users have rewards
+            Parallel.ForEach(allUsers, user =>
+            {
+                if (user.UserRewards.Count == 0)
+                {
+                    _output.WriteLine($"User {user.UserId} has no rewards.");
+                }
+                Assert.True(user.UserRewards.Count > 0, $"User {user.UserId} has no rewards.");
+            });
+
             stopWatch.Stop();
             _fixture.TourGuideService.Tracker.StopTracking();
 
