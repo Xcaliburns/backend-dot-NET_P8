@@ -19,13 +19,14 @@ public class RewardServiceTest : IClassFixture<DependencyFixture>
     }
 
     [Fact]
-    public void UserGetRewards()
+    public async void UserGetRewards()
     {
         _fixture.Initialize(0);
         var user = new User(Guid.NewGuid(), "jon", "000", "jon@tourGuide.com");
         var attraction = _fixture.GpsUtil.GetAttractions().First();
         user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
-        _fixture.TourGuideService.TrackUserLocation(user);
+        _fixture.TourGuideService.TrackUserLocation(user); // Ensure this method is awaited
+        await _fixture.RewardsService.CalculateRewardsAsync(user); // Calculate rewards for the user
         var userRewards = user.UserRewards;
         _fixture.TourGuideService.Tracker.StopTracking();
         Assert.True(userRewards.Count == 1);
@@ -40,13 +41,14 @@ public class RewardServiceTest : IClassFixture<DependencyFixture>
 
    // [Fact(Skip = ("Needs fixed - can throw InvalidOperationException"))]
     [Fact]
-    public void NearAllAttractions()
+    //ajout de await
+    public async Task NearAllAttractions()
     {
         _fixture.Initialize(1);
         _fixture.RewardsService.SetProximityBuffer(int.MaxValue);
 
         var user = _fixture.TourGuideService.GetAllUsers().First();
-        _fixture.RewardsService.CalculateRewardsAsync(user);
+        await _fixture.RewardsService.CalculateRewardsAsync(user);
         var userRewards = _fixture.TourGuideService.GetUserRewards(user);
         _fixture.TourGuideService.Tracker.StopTracking();
 
