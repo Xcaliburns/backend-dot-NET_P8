@@ -33,4 +33,9 @@ jobs:
       with:
         name: Build Artifacts
         path: ./publish
+    - name: Upload tests results
+      uses: actions/upload-artifact@v3
+      with:
+        name: Tests results
+        path: '**/TestResults/*.trx'
       
