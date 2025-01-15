@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
     #l'option --logger permet de generer le fichier pour les tests
-      run: dotnet test --no-build --verbosity normal --logger "trx;LogFileName=TestResults"
+      run: dotnet test --no-build --verbosity normal --logger trx
     - name: Publish
       run: dotnet publish --configuration Release --output ./publish
 
