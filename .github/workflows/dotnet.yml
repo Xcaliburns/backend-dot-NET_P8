@@ -42,5 +42,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Tests results
-        path: '**/TestResults/*.trx'
+        #search all trx files
+        path: '**/*.trx'
       
