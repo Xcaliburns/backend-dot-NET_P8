@@ -11,8 +11,9 @@ public class RewardCentral
 {
     public int GetAttractionRewardPoints(Guid attractionId, Guid userId)
     {
-        int randomDelay = new Random().Next(1, 1000);
-        Thread.Sleep(randomDelay);
+        //commenté pour les tests de performance
+        //int randomDelay = new Random().Next(1, 1000);
+        //Thread.Sleep(randomDelay);
 
         int randomInt = new Random().Next(1, 1000);
         return randomInt;

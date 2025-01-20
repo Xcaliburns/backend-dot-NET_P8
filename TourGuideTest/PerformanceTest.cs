@@ -44,12 +44,12 @@ namespace TourGuideTest
             _output = output;
         }
 
-        // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
+       //  [Fact(Skip = ("Delete Skip when you want to pass the test"))]
         [Fact]
         public void HighVolumeTrackLocation()
         {
             // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(100);
+            _fixture.Initialize(100000);
 
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
 
@@ -71,12 +71,12 @@ namespace TourGuideTest
             Assert.True(TimeSpan.FromMinutes(15).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
         }
 
-        // [Fact(Skip = ("Delete Skip when you want to pass the test"))]
+      //  [Fact(Skip = ("Delete Skip when you want to pass the test"))]
         [Fact]
         public async Task HighVolumeGetRewardsAsync()
         {
             // Initialize with a higher number of users if needed
-            _fixture.Initialize(100);
+            _fixture.Initialize(100000);
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
