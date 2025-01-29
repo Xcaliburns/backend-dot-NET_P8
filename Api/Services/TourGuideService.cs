@@ -75,7 +75,7 @@ public class TourGuideService : ITourGuideService
     public List<Provider> GetTripDeals(User user)
     {
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
-        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId, //modifications dans tripPricer pour la réussite du test
+        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId,
             user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
             user.UserPreferences.TripDuration, cumulativeRewardPoints);
         user.TripDeals = providers;

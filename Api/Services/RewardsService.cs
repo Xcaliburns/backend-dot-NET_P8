@@ -33,40 +33,7 @@ public class RewardsService : IRewardsService
         _proximityBuffer = _defaultProximityBuffer;
     }
 
-    //public async Task CalculateRewardsAsync(User user)
-    //{
-    //    count++;
-    //    List<VisitedLocation> userLocations = user.VisitedLocations;
-    //    List<Attraction> attractions = _gpsUtil.GetAttractions();
-
-    //    var userRewards = new ConcurrentBag<UserReward>();
-    //    var tasks = new List<Task>();
-
-    //    Parallel.ForEach(userLocations, visitedLocation =>
-    //    {
-    //        foreach (var attraction in attractions)
-    //        {
-    //            if (NearAttraction(visitedLocation, attraction))
-    //            {
-    //                tasks.Add(Task.Run(() =>
-    //                {
-    //                    var rewardPoints = GetRewardPoints(attraction, user);
-    //                    var userReward = new UserReward(visitedLocation, attraction, rewardPoints);
-    //                    userRewards.Add(userReward);
-    //                }));
-    //            }
-    //        }
-    //    });
-
-    //    // Wait for all tasks to complete
-    //    await Task.WhenAll(tasks);
-
-    //    // Add rewards to the user
-    //    foreach (var reward in userRewards)
-    //    {
-    //        user.AddUserReward(reward);
-    //    }
-    //}
+  
 
     public async Task CalculateRewardsAsync(User user)
     {

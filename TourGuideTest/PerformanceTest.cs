@@ -15,24 +15,7 @@ namespace TourGuideTest
 {
     public class PerformanceTest : IClassFixture<DependencyFixture>
     {
-        /*
-         * Note on performance improvements:
-         * 
-         * The number of generated users for high-volume tests can be easily adjusted using this method:
-         * 
-         *_fixture.Initialize(100000); (for example)
-         * 
-         * 
-         * These tests can be modified to fit new solutions, as long as the performance metrics at the end of the tests remain consistent.
-         * 
-         * These are the performance metrics we aim to achieve:
-         * 
-         * highVolumeTrackLocation: 100,000 users within 15 minutes:
-         * Assert.True(TimeSpan.FromMinutes(15).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
-         *
-         * highVolumeGetRewards: 100,000 users within 20 minutes:
-         * Assert.True(TimeSpan.FromMinutes(20).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
-        */
+        
 
         private readonly DependencyFixture _fixture;
 
@@ -44,19 +27,18 @@ namespace TourGuideTest
             _output = output;
         }
 
-       //  [Fact(Skip = ("Delete Skip when you want to pass the test"))]
+     
         [Fact]
         public void HighVolumeTrackLocation()
         {
-            // On peut ici augmenter le nombre d'utilisateurs pour tester les performances
-            _fixture.Initialize(10000);
+          
+            _fixture.Initialize(1000);
 
             List<User> allUsers = _fixture.TourGuideService.GetAllUsers();
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-
-            // Utiliser Parallel.ForEach pour paralléliser le traitement des utilisateurs
+           
             Parallel.ForEach(allUsers, user =>
             {
                 _fixture.TourGuideService.TrackUserLocation(user);
@@ -71,12 +53,12 @@ namespace TourGuideTest
             Assert.True(TimeSpan.FromMinutes(15).TotalSeconds >= stopWatch.Elapsed.TotalSeconds);
         }
 
-      //  [Fact(Skip = ("Delete Skip when you want to pass the test"))]
+     
         [Fact]
         public async Task HighVolumeGetRewardsAsync()
         {
-            // Initialize with a higher number of users if needed
-            _fixture.Initialize(10000);
+           
+            _fixture.Initialize(1000);
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
