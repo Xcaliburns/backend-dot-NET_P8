@@ -1,5 +1,6 @@
 ﻿using GpsUtil.Location;
 using Microsoft.AspNetCore.Mvc;
+using TourGuide.Models;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
 using TripPricer;
@@ -28,13 +29,13 @@ public class TourGuideController : ControllerBase
 
     
     [HttpGet("getNearbyAttractions")]
-    public ActionResult<List<object>> GetNearbyAttractions([FromQuery] string userName)
+    public ActionResult<List<NearbyAttraction>> GetNearbyAttractions([FromQuery] string userName)
     {
         var user = GetUser(userName);
         var visitedLocation = _tourGuideService.GetUserLocation(user);
 
         var closestAttractions = _tourGuideService.GetNearByAttractions(visitedLocation)
-            .Select(attraction => new
+            .Select(attraction => new NearbyAttraction
             {
                 AttractionName = attraction.AttractionName,
                 AttractionLatitude = attraction.Latitude,
@@ -43,8 +44,8 @@ public class TourGuideController : ControllerBase
                 UserLongitude = visitedLocation.Location.Longitude,
                 Distance = _rewardsService.GetDistance(attraction, visitedLocation.Location),
                 RewardPoints = _rewardsService.GetRewardPoints(attraction, user)
-            })
-          ;
+            });
+            
 
         return Ok(closestAttractions);
     }

@@ -74,6 +74,7 @@ public class RewardsService : IRewardsService
     public List<Attraction> GetClosestAttractions(Locations location)
     {
         var attractions = _gpsUtil.GetAttractions();
+        var numberOfAttractions = 5;
         var closestAttractions = attractions
             .Select(attraction => new
             {
@@ -81,7 +82,7 @@ public class RewardsService : IRewardsService
                 Distance = GetDistance(attraction, location)
             })
             .OrderBy(attractionWithDistance => attractionWithDistance.Distance)
-            .Take(5)
+            .Take(numberOfAttractions)
             .Select(attractionWithDistance => attractionWithDistance.Attraction)
             .ToList();
 
