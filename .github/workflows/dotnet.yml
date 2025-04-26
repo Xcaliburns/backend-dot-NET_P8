@@ -1,0 +1,47 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+    #l'option --logger permet de generer le fichier pour les tests
+      run: dotnet test --no-build --verbosity normal --logger trx
+    - name: Publish
+      run: dotnet publish --configuration Release --output ./publish
+
+      #add un upload for build artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Build Artifacts
+        path: ./publish
+
+        #should add un upload for tests success
+    - name: Upload tests results
+      uses: actions/upload-artifact@v3
+      with:
+        name: Tests results
+        #search all trx files
+        path: '**/*.trx'
+      

@@ -86,21 +86,13 @@ public class TourGuideService : ITourGuideService
     {
         VisitedLocation visitedLocation = _gpsUtil.GetUserLocation(user.UserId);
         user.AddToVisitedLocations(visitedLocation);
-        _rewardsService.CalculateRewards(user);
+        _rewardsService.CalculateRewardsAsync(user);
         return visitedLocation;
     }
 
     public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
     {
-        List<Attraction> nearbyAttractions = new ();
-        foreach (var attraction in _gpsUtil.GetAttractions())
-        {
-            if (_rewardsService.IsWithinAttractionProximity(attraction, visitedLocation.Location))
-            {
-                nearbyAttractions.Add(attraction);
-            }
-        }
-
+        List<Attraction> nearbyAttractions = _rewardsService.GetClosestAttractions(visitedLocation.Location);
         return nearbyAttractions;
     }
 
